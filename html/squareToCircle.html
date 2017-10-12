@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #square  {
+          width: 100px;
+          height: 100px;
+          background: blue;
+          margin: 100px;
+          border-radius: 0px;
+      }
+      #increase {
+        margin-right:100px;
+      }
+      #reduce {
+        margin-left:100px;
+      }
+      #reset {
+        margin-left:100px;
+      }
+    </style>
+  </head>
+  <body>
+    <p> Change Square to Circle </p>
+    <div id="square"></div>
+    <!-- <div id="circle"></div> -->
+    <button id = "increase" type = button onclick="circle()"> + </button>
+    <button id = "reduce" type = button onclick="square()" disabled> - </button>
+    <br>
+    <button id = "reset" type = button onclick="reset()" disabled > Reset </button>
+    <p id="demo"></p>
+    <script src = "../js/squareToCircle.js">
+    </script>
+  </body>
+</html>
