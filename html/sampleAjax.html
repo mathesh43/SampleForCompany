@@ -1,24 +1,52 @@
 <!DOCTYPE html>
 <html>
 <body onload="loadDoc()">
+<head>
+  <style media="screen">
+  span {
+    display: inline-block;
+    padding:10px;
+    /*margin:8px;*/
+  }
+  .divSubFields {
+    background: #ffff80;
+  }
 
-<h2>The XMLHttpRequest Object</h2>
 
-<p id="demo">Let AJAX change this text.</p>
+
+  </style>
+<h2>Docker Images with versions</h2>
+<button type="button" onclick="refresh()" >Home page</button>
+<p id="demo"></p>
+<div id="parentDiv">
+  <p id ="title" > <span>ID</span>
+    <span>Name</span>
+    <span>ImageName</span>
+    <span>Latest version</span>
+</div>
 <p id="director"></p>
-<!-- <button type="button" onclick="loadDoc()">Change Content</button> -->
+
 
 <script>
-var arrayOfElements = [];
 var arrayToDisplay = [];
 var arrayOfNotLatestImages = [];
 var jsonData;
+var flag =true;
+var parentNode = document.getElementById("parentDiv").innnerHTML;
 var increment = 0;
+function refresh() {
+  location.reload();
+}
 function loadDoc() {
+  // removeChildElements();
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
+      arrayOfNotLatestImages.length=0;
+      arrayToDisplay.length=0;
+      jsonData = '';
        jsonData = this.responseText;
+
       processData(jsonData);
     }
   };
@@ -28,21 +56,19 @@ function loadDoc() {
   xhttp.setRequestHeader('accept','application/json')
   xhttp.send();
 }
+// function removeChildElements() {
+//   var list = document.getElementById("title");
+//   list.removeChild(list.childNodes[0]);
+// }
 function processData(jsonData) {
 console.log("before parse");
 var parseJsonData = JSON.parse(jsonData);
 for (var key in parseJsonData) {
-  console.log(" key value  " + key);
   var keyValue = key;
 var valueOfJson = parseJsonData[key];
 
 	for ( var i in valueOfJson) {
-    var obj = {};
-    obj['key'] = key;
-    obj['value'] = valueOfJson[i];
-    arrayOfElements.push(obj);
-
-        for (var individualImage in valueOfJson[i]) {
+            for (var individualImage in valueOfJson[i]) {
           var objWithLatestKey = {};
           if(individualImage === 'latest') {
           objWithLatestKey['key'] = key;
@@ -50,9 +76,7 @@ var valueOfJson = parseJsonData[key];
           objWithLatestKey['value'] = imageName[0];
           objWithLatestKey['version'] = imageName[1];
           arrayToDisplay.push(objWithLatestKey);
-        console.log(individualImage);
-        console.log(valueOfJson[i][individualImage]);
-      }
+      } 
         objWithLatestKey['key'] = key;
         var imageName = valueOfJson[i][individualImage].split(":");
         objWithLatestKey['value'] = imageName[0];
@@ -61,36 +85,129 @@ var valueOfJson = parseJsonData[key];
 
         }
 	}
-  viewAll();
+
 }
+viewAll();
 }
 function viewAll() {
   console.log("in viewall");
-  var text = "<table border ='0'><tr><th>Id</th><th>Name</th><th>ImageName</th><th>version</th></tr>"
+  var titlePara = document.getElementById("title");
+  // var text = "<table border ='0'><tr><th>Id</th><th>Name</th><th>ImageName</th><th>Latest version</th></tr>"
   for (var i=0;i<arrayToDisplay.length;i++){
   var value = arrayToDisplay[i];
-  console.log("value " + value.key);
-  text+="<tr><td>"+(i+1)+"</td><td>"+value.key+"</td><td><a id="+value.key+" href='#' onclick='javascript:viewNonLatestImages(this); return false;' >"+value.value+"</a></td><td>"+value.version+"</td></tr>";
+
+   var para = document.createElement("p");
+   para.setAttribute('id',value.key);
+
+// id span
+   var span = document.createElement("span");
+   var textNode = document.createTextNode(i+1);
+   span.appendChild(textNode);
+   para.appendChild(span);
+
+   // name span
+  var span = document.createElement("span");
+  var textNode = document.createTextNode(value.key);
+  span.appendChild(textNode);
+  para.appendChild(span);
+
+      //image name span
+  var span = document.createElement("span");
+  // span.setAttribute("onmouseover","viewNonLatestImages(this)");
+  span.setAttribute("onclick","viewNonLatestImages(this)");
+  // span.setAttribute("onmouseout","removeNonLatestImages(this)");
+  span.setAttribute("id",value.key);
+  span.setAttribute("style","color:blue");
+  var textNode = document.createTextNode(value.value);
+  span.appendChild(textNode);
+  para.appendChild(span);
+         // Latest  version span
+  var span = document.createElement("span");
+  var textNode = document.createTextNode(value.version);
+  span.appendChild(textNode);
+  para.appendChild(span);
+
+  titlePara.appendChild(para);
+  // text+="<tr><td>"+(i+1)+"</td><td>"+value.key+"</td><td><a id="+value.key+" href='#' onclick='javascript:viewNonLatestImages(this); return false;' >"+value.value+"</a></td><td>"+value.version+"</td></tr>";
 }
-text+="</table>";
-document.getElementById("demo").innerHTML = text;
+// text+="</table>";
 }
+
+function removeNonLatestImages(imageDetails) {
+  console.log("remove it" + imageDetails.id+'_nonLatest');
+
+  var parent = document.getElementById(imageDetails.id);
+var child = document.getElementById(imageDetails.id+'_nonLatest');
+parent.removeChild(child);
+
+}
+
+
 function viewNonLatestImages(imageDetails) {
+
+if(document.getElementById(imageDetails.id+'_nonLatest') != undefined) {
+  removeNonLatestImages(imageDetails);
+} else{
+
   var imageName = document.getElementById(imageDetails.id).id;
+    var titlePara = document.getElementById(imageName);
+
+    var divForNonLatest = document.createElement("div");
+    divForNonLatest.setAttribute('id',imageName+'_nonLatest');
+    divForNonLatest.setAttribute('class','divSubFields');
+
   console.log("in viewNonLatestImages " + imageName);
-  var text = "<table border ='0'><tr><th>Id</th><th>Name</th><th>ImageName</th><th>version</th></tr>"
   var localIncrement = 1;
   for (var i=0;i<arrayOfNotLatestImages.length;i++){
   var value = arrayOfNotLatestImages[i];
-  console.log("value " + value.key);
   if(value.key === imageName) {
-  text+="<tr><td>"+localIncrement+"</td><td>"+value.key+"</td><td>";
-  text+=value.value+"</a></td><td>"+value.version+"</td></tr>";
+
+    var para = document.createElement("p");
+    para.setAttribute('id',value.key);
+    para.setAttribute('class','subFields');
+
+ // id span
+    var span = document.createElement("span");
+    var textNode = document.createTextNode(localIncrement);
+    span.appendChild(textNode);
+    para.appendChild(span);
+
+    // name span
+   var span = document.createElement("span");
+   var textNode = document.createTextNode(value.key);
+   span.appendChild(textNode);
+   para.appendChild(span);
+
+       //image name span
+   var span = document.createElement("span");
+   var textNode = document.createTextNode(value.value);
+   span.appendChild(textNode);
+   para.appendChild(span);
+          // Latest  version span
+   var span = document.createElement("span");
+   var textNode = document.createTextNode(value.version);
+   span.appendChild(textNode);
+   para.appendChild(span);
+
+divForNonLatest.appendChild(para);
   localIncrement = localIncrement + 1;
 }
 }
-text+="</table>";
-document.getElementById("demo").innerHTML = text;
+titlePara.appendChild(divForNonLatest);
+var ref = document.getElementById(imageName);
+console.log("image name in view all" + imageName);
+// document.getElementById(imageName).onclick = function () {
+//   removeNonLatestImages(imageName);
+// };
+insertAfter(titlePara, ref);
+}
+}
+
+function changeMethod() {
+
+}
+function insertAfter(titlePara, referenceNode) {
+    referenceNode.parentNode.insertBefore(titlePara, referenceNode.nextSibling);
 }
 </script>
 
